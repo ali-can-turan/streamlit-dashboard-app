@@ -61,7 +61,7 @@ def fig_plotter(df):
 
 
 ## read data into csv
-link = st.secrets["data_link"]
+link = st.secrets["sales_data.csv"]
 df = pd.read_csv(link)
 
 ## page configuraiton
