@@ -63,6 +63,7 @@ def fig_plotter(df):
 ## read data into csv
 link = st.secrets["sales_data"]
 df = pd.read_csv(link)
+# df = pd.read_csv("sales_data.csv")
 
 ## page configuraiton
 st.set_page_config(page_title="Dashboard", layout="wide", initial_sidebar_state="collapsed")
@@ -89,7 +90,7 @@ if month_selected!= "All":
 else:
 	df_filtered = df.query("Region in @regions_selected")
 
-df_difference = df_filtered.assign(Difference=df_filtered["Sales"] - df_filtered["Expenses"])
+df_difference = (df_filtered["Sales"] - df_filtered["Expenses"]).to_frame(name="Difference")
 
 ## plots
 bar, line, bar2, line2 = fig_plotter(df_filtered)
@@ -100,24 +101,30 @@ with tab1:
 	t1container1 = st.container(horizontal=True, height=300)
 	with t1container1:
 		with st.expander(label="See filtered dataframe:", type="compact", expanded=False):
-			data_selected = st.dataframe(df_filtered, hide_index=True, height=240)
+			st.dataframe(df_filtered, hide_index=True, height=240,
+					 column_config={"Sales": st.column_config.ProgressColumn(min_value=5000, max_value=20000, format=" "),
+							    "Expenses": st.column_config.ProgressColumn(min_value=2000, max_value=10000, format=" ")}
+					)
 		bar_selected = st.plotly_chart(bar, theme="streamlit")
 
 	t1container2 = st.container(horizontal=True, height=300)
 	with t1container2:
 		with st.expander(label="See difference dataframe:", type="compact", expanded=False):
-			st.dataframe(df_difference, hide_index=True, height=240)
+			st.dataframe(df_difference, hide_index=True, height=240,  width="content")
 		line_selected = st.plotly_chart(line, theme="streamlit")
 
 with tab2:
 	t2container1 = st.container(horizontal=True, height=300)
 	with t2container1:
 		with st.expander(label="See filtered dataframe:", type="compact", expanded=False):
-			data_selected = st.dataframe(df_filtered, hide_index=True, height=240)
+			 st.dataframe(df_filtered, hide_index=True, height=240,
+					  column_config={"Sales": st.column_config.ProgressColumn(min_value=5000, max_value=20000, format=" "),
+							    "Expenses": st.column_config.ProgressColumn(min_value=2000, max_value=10000, format=" ")}
+					 )
 		bar2_selected = st.plotly_chart(bar2, theme="streamlit")
 
 	t2container2 = st.container(horizontal=True, height=300)
 	with t2container2:
 		with st.expander(label="See difference dataframe:", type="compact", expanded=False):
-			st.dataframe(df_difference, hide_index=True, height=240)
+			st.dataframe(df_difference, hide_index=True, height=240, width="content",)
 		line2_selected = st.plotly_chart(line2, theme="streamlit")
