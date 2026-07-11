@@ -68,63 +68,90 @@ df = pd.read_csv(link)
 ## page configuraiton
 st.set_page_config(page_title="Dashboard", layout="wide", initial_sidebar_state="collapsed")
 
-## sidebar filters
-with st.sidebar:
-	st.title("Filter Options")
-	regions_selected = st.multiselect(label="Regions",
-									  help="Please choose one or more regions to filter.",
-									  width="stretch", disabled=False,
-									  options=df.Region.unique(),
-									  default=df.Region.unique(),
+## username and password
+for k, v in st.query_params.items():
+	st.session_state[k] = v
+
+if "authorized" not in st.session_state:
+	st.session_state.authorized = False
+
+if not st.session_state.authorized or st.session_state.authorized == "False":
+	user_name = st.text_input(label="Enter your username:", help="Your username: admin.", value="admin")
+	password = st.text_input(label="Enter your password:", help="Your password: password.", value="passwor")
+	mask = (len(user_name) < 5) | (len(password) < 8)
+	if st.button(label="Log in", type="primary", disabled=mask):
+		if user_name == "admin" and password == "password":
+			st.session_state.authorized = True
+			st.query_params.authorized = True
+			st.rerun()
+
+else:
+	## sidebar button and filters
+	# log out
+	if st.sidebar.button(label="Log out", type="primary"):
+		st.session_state.authorized = False
+		st.query_params.clear()
+		st.rerun()
+
+	# filters
+	with st.sidebar:
+		st.title("Filter Options")
+		regions_selected = st.multiselect(label="Regions",
+										  help="Please choose one or more regions to filter.",
+										  width="stretch", disabled=False,
+										  options=df.Region.unique(),
+										  default=df.Region.unique(),
+										  filter_mode="contains")
+
+		month_selected = st.selectbox(label="Months",
+									  help="Please choose one month to filter.",
+									  options=["All"] + df.Month.unique().tolist(),
+									  index=0,
 									  filter_mode="contains")
 
-	month_selected = st.selectbox(label="Months",
-								  help="Please choose one month to filter.",
-								  options=["All"] + df.Month.unique().tolist(),
-								  index=0,
-								  filter_mode="contains")
+	# filtered dataframe manipulation
+	if month_selected!= "All":
+		df_filtered = df.query("Region in @regions_selected and Month==@month_selected")
+	else:
+		df_filtered = df.query("Region in @regions_selected")
 
-# filtered dataframe manipulation
-if month_selected!= "All":
-	df_filtered = df.query("Region in @regions_selected and Month==@month_selected")
-else:
-	df_filtered = df.query("Region in @regions_selected")
+	df_difference = (df_filtered["Sales"] - df_filtered["Expenses"]).to_frame(name="Difference")
 
-df_difference = (df_filtered["Sales"] - df_filtered["Expenses"]).to_frame(name="Difference")
+	## plots
+	bar, line, bar2, line2 = fig_plotter(df_filtered)
 
-## plots
-bar, line, bar2, line2 = fig_plotter(df_filtered)
+	## layout
+	tab1, tab2 = st.tabs(tabs=["Sales Overview", "Expenses Analysis"], default="Sales Overview")
+	with tab1:
+		t1container1 = st.container(horizontal=True, height=300)
+		with t1container1:
+			with st.expander(label="See filtered dataframe:", type="compact", expanded=False):
+				st.dataframe(df_filtered, hide_index=True, height=240,
+						 column_config={"Sales": st.column_config.ProgressColumn(min_value=5000, max_value=20000, format=" "),
+								    "Expenses": st.column_config.ProgressColumn(min_value=2000, max_value=10000, format=" ")}
+						)
+			bar_selected = st.plotly_chart(bar, theme="streamlit")
 
-## layout
-tab1, tab2 = st.tabs(tabs=["Sales Overview", "Expenses Analysis"], default="Sales Overview")
-with tab1:
-	t1container1 = st.container(horizontal=True, height=300)
-	with t1container1:
-		with st.expander(label="See filtered dataframe:", type="compact", expanded=False):
-			st.dataframe(df_filtered, hide_index=True, height=240,
-					 column_config={"Sales": st.column_config.ProgressColumn(min_value=5000, max_value=20000, format=" "),
-							    "Expenses": st.column_config.ProgressColumn(min_value=2000, max_value=10000, format=" ")}
-					)
-		bar_selected = st.plotly_chart(bar, theme="streamlit")
+		t1container2 = st.container(horizontal=True, height=300)
+		with t1container2:
+			with st.expander(label="See difference dataframe:", type="compact", expanded=False):
+				st.dataframe(df_difference, hide_index=True, height=240,  width="content")
+			line_selected = st.plotly_chart(line, theme="streamlit")
 
-	t1container2 = st.container(horizontal=True, height=300)
-	with t1container2:
-		with st.expander(label="See difference dataframe:", type="compact", expanded=False):
-			st.dataframe(df_difference, hide_index=True, height=240,  width="content")
-		line_selected = st.plotly_chart(line, theme="streamlit")
+	with tab2:
+		t2container1 = st.container(horizontal=True, height=300)
+		with t2container1:
+			with st.expander(label="See filtered dataframe:", type="compact", expanded=False):
+				 st.dataframe(df_filtered, hide_index=True, height=240,
+						  column_config={"Sales": st.column_config.ProgressColumn(min_value=5000, max_value=20000, format=" "),
+								    "Expenses": st.column_config.ProgressColumn(min_value=2000, max_value=10000, format=" ")}
+						 )
+			bar2_selected = st.plotly_chart(bar2, theme="streamlit")
 
-with tab2:
-	t2container1 = st.container(horizontal=True, height=300)
-	with t2container1:
-		with st.expander(label="See filtered dataframe:", type="compact", expanded=False):
-			 st.dataframe(df_filtered, hide_index=True, height=240,
-					  column_config={"Sales": st.column_config.ProgressColumn(min_value=5000, max_value=20000, format=" "),
-							    "Expenses": st.column_config.ProgressColumn(min_value=2000, max_value=10000, format=" ")}
-					 )
-		bar2_selected = st.plotly_chart(bar2, theme="streamlit")
-
-	t2container2 = st.container(horizontal=True, height=300)
-	with t2container2:
-		with st.expander(label="See difference dataframe:", type="compact", expanded=False):
-			st.dataframe(df_difference, hide_index=True, height=240, width="content",)
-		line2_selected = st.plotly_chart(line2, theme="streamlit")
+		t2container2 = st.container(horizontal=True, height=300)
+		with t2container2:
+			with st.expander(label="See difference dataframe:", type="compact", expanded=False):
+				st.dataframe(df_difference, hide_index=True, height=240, width="content",)
+			line2_selected = st.plotly_chart(line2, theme="streamlit")
+	for k, v in st.session_state.items():
+		st.query_params[k] = v
