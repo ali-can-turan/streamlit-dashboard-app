@@ -65,8 +65,6 @@ link = st.secrets["sales_data"]
 df = pd.read_csv(link)
 # df = pd.read_csv("sales_data.csv")
 
-## page configuraiton
-st.set_page_config(page_title="Dashboard", layout="wide", initial_sidebar_state="collapsed")
 
 ## username and password
 for k, v in st.query_params.items():
@@ -76,6 +74,10 @@ if "authorized" not in st.session_state:
 	st.session_state.authorized = False
 
 if not st.session_state.authorized or st.session_state.authorized == "False":
+	# page configuraiton
+	st.set_page_config(page_title="Dashboard", layout="centered")
+
+	# Authorization
 	user_name = st.text_input(label="Enter your username:", help="Your username: admin.", value="admin")
 	password = st.text_input(label="Enter your password:", help="Your password: password.", value="passwor")
 	mask = (len(user_name) < 5) | (len(password) < 8)
@@ -86,6 +88,9 @@ if not st.session_state.authorized or st.session_state.authorized == "False":
 			st.rerun()
 
 else:
+	## page configuraiton
+	st.set_page_config(page_title="Dashboard", layout="wide", initial_sidebar_state="collapsed")
+
 	## sidebar button and filters
 	# log out
 	if st.sidebar.button(label="Log out", type="primary"):
