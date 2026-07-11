@@ -2,6 +2,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import time
 
 ## plot functions
 def layout(fig):
@@ -85,7 +86,11 @@ if not st.session_state.authorized or st.session_state.authorized == "False":
 		if user_name == "admin" and password == "password":
 			st.session_state.authorized = True
 			st.query_params.authorized = True
+			success = st.success("Authorization is successful! You are directed to the page.")
+			time.sleep(1.5)
 			st.rerun()
+		else:
+			st.error("Username or password is wrong!")
 
 else:
 	## page configuraiton
