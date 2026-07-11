@@ -79,8 +79,8 @@ if not st.session_state.authorized or st.session_state.authorized == "False":
 	st.set_page_config(page_title="Dashboard", layout="centered")
 
 	# Authorization
-	user_name = st.text_input(label="Enter your username:", help="Your username: admin.", value="admin")
-	password = st.text_input(label="Enter your password:", help="Your password: password.", value="passwor")
+	user_name = st.text_input(label="Enter your username:", help="Your username: admin", value="admin")
+	password = st.text_input(label="Enter your password:", help="Your password: password", value="passwor")
 	mask = (len(user_name) < 5) | (len(password) < 8)
 	if st.button(label="Log in", type="primary", disabled=mask):
 		if user_name == "admin" and password == "password":
