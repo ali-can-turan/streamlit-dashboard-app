@@ -91,6 +91,7 @@ if not st.session_state.authorized or st.session_state.authorized == "False":
 			st.rerun()
 		else:
 			st.error("Username or password is wrong!")
+	st.markdown("[See the code on github](https://github.com/ali-can-turan/case-studies-academic/blob/main/app.md)", unsafe_allow_html=True)
 
 else:
 	## page configuraiton
@@ -118,6 +119,7 @@ else:
 									  options=["All"] + df.Month.unique().tolist(),
 									  index=0,
 									  filter_mode="contains")
+		st.markdown("[See the code on github](https://github.com/ali-can-turan/case-studies-academic/blob/main/app.md)", unsafe_allow_html=True)
 
 	# filtered dataframe manipulation
 	if month_selected!= "All":
